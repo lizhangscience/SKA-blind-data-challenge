@@ -40,7 +40,7 @@ Calculated assuming station SEFD of 2500 Jy at 115 MHz.
 
 # Skymodels creation:
 
-The EoR and FG OSKAR skymodel files in the directory skymodels_mf are created by using the script create_skymodels.py. The intensity units in the skymodel are in Jy/pixel.
+The EoR and FG OSKAR skymodel files in the directory skymodels_mf are created by using the script create_skymodels_mf.py. The intensity units in the skymodel are in Jy/pixel.
 
 # Creating the challenge datasets:
 
