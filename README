@@ -1,0 +1,88 @@
+# Instructions for setting up SKA data challenge
+# Modhurita Mitra, modhurita@gmail.com
+# 09 July 2019
+
+# Python scripts:
+
+Function definitions: definitions_mf_mt.py
+Driver script: blind_challenge.py
+
+General parameters for the simulation are set at the top of the driver script. Other specific simulation parameters can be set in the OSKAR setup file, setup_SKA_core_blind_challenge.ini.
+
+# Software used:
+
+For creating visibilities: OSKAR, v. 2.6.1
+For concatenating visibilities: CASA, v. 5.1.1-5
+For imaging: wsclean, v. 2.4
+For power spectrum generation: F. Mertens' power spectrum generation code, v. 0.3.0: /home/users/modhurita/ps_eor-0.3.0/simple_ps.py
+
+Source this file for the software above to run properly:
+   $ source /software/users/lofarsoft/dawn/lofarsoft.sh_forOSKAR.sh
+
+# Input files for simulating visibilities in OSKAR:
+
+Setup file: setup_SKA_core_blind_challenge.ini
+Telescope configuration directory: SKA_core.tm
+Skymodels directory: skymodels_mf
+
+# Source image files used:
+
+21-cm EoR signal: fg_image_1.17arcmin.fits
+Foreground signal: eor_image_1.17arcmin.fits
+
+The intensity is in units of K, and the image size is 512x512 pixels over a FoV of 10 degrees, making the pixel spacing 1.17 arcmin.
+
+These image files are derived by adding appropriate fits headers to the EoR image, eor_standard.fits, and the foreground diffuse emission image, GalFG_standard.fits, from V. Jelic.
+
+# SEFD calculation:
+
+Calculated assuming station SEFD of 2500 Jy at 115 MHz.
+
+# Skymodels creation:
+
+The EoR and FG OSKAR skymodel files in the directory skymodels_mf are created by using the script create_skymodels.py. The intensity units in the skymodel are in Jy/pixel.
+
+# Creating the challenge datasets:
+
+1. Set simulation parameters (observational and telescope parameters) in the OSKAR setup file.
+2. Set general parameters (time and frequency steps, directory locations, etc.) at the top of the driver file.
+3. Run the driver file:
+   $ python blind_challenge.py
+   
+   This will create a directory, blind_challenge, which has 4 subdirectories:
+   - visibilities: Contains simulated visibilities at each frequency
+   - images: Contains images and PSFs at each frequency
+   - data: Contains power spectra in text file format
+   - plots: Contains plots of power spectra
+
+# Creating beam model:
+  Created via the OSKAR GUI using setup file setup_SKA_core_blind_challenge_beam.ini. The beam file is average_beam_Stokes_I.fits.
+
+# What to provide to challenge participants:
+
+  1. Visibility files
+  2. Image files + PSF files
+  3. Beam model file
+  4. Telescope configuration directory
+  5. Documentationfile: Documentation.pdf
+
+# Truth values
+
+  To analyze the results from the participants, we need to know the truth values of the power spectrum. The truth values are computed and stored in the directory true_ps:
+  - Script for computing power spectrum: generate_ps_from_img_cube.sh
+  - Power spectrum configuration: ps_config.parset
+  - EoR bins: eor_bins.txt
+  - Run the script like this:  generate_ps_from_img_cube.sh <filename>
+                       (Here <filename> is one of V. Jelic's original files, eor_standard.fits or GalFG_standard.fits) 
+   
+# How to analyze results:
+
+  1. For analyzing the 3D power spectrum, use the Jupyter notebook EoR_p_Noise_p_FG_SphericallyAveraged3DPowerSpectrum1000h.ipynb.
+  2. For analyzing the 2D power spectrum, use the Jupyter notebook EoR_p_Noise_p_FG_CylindricallyAveraged2DPowerSpectrum1000h.ipynb.
+
+  An anonymized version of the 3D power spectrum analysis notebook: DataChallenge_EoR_p_Noise_p_FG_SphericallyAveraged3DPowerSpectrum1000h.ipynb
+
+  The part where the results files are read in at the top of the notebooks will need to be modified manually to set directory locations and read each file individually according to how the participant ordered the columns. When reading in the files, one has to examine the results file carefully and clean up the raw results which might not be in the correct format, have missing/inadmissible values, have NaNs, etc. 
+
+# Paper draft: SKADataChallenge.zip
+  Contains LaTeX draft of paper describing results, and associated files and images.
