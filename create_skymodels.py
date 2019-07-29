@@ -1,4 +1,4 @@
-from definitions_mf import *
+from definitions import *
 import numpy as np
 import os
 
