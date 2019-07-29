@@ -1,35 +1,34 @@
-from definitions import *
+from definitions_mf import *
 import numpy as np
+import os
 
-if __name__ == "__main__":
-    
-    #Images in kelvin units
-    fg_image_k = 'fg_image_1.17arcmin.fits'
-    eor_image_k = 'eor_image_1.17arcmin.fits'
+if __name__ == "__main__":   
 
-    #Compute pixel area in steradians
-    pixel_spacing_arcmin = 1.17 
-    pixel_solid_angle_deg = (pixel_spacing_arcmin/60)**2
-    pixel_solid_angle_steradians = pixel_solid_angle_deg * (np.pi/180)**2
-         
-    k_B = 1.38064852*1e-23 #Boltzmann constant
-    c = 3.e8 #Speed of light
+    start_channel = 0
+    num_channels = 21
+    pixel_spacing_arcmin = 1.17
  
-    freq = 115.e6 #Frequency in Hz
-    wavelength = c/freq
+    make_positive_freq_subcube_from_multifreq_fitsfile(input_fitsfile='GalFG_standard.fits', output_fitsfile= 'GalFG_standard_subcube.fits', start_channel=start_channel, num_channels=num_channels, cellsize_arcmin=pixel_spacing_arcmin)
 
-    #Compute scale factor to go from K to Jy/pixel
-    #See https://science.nrao.edu/facilities/vla/proposing/TBconv
-    scale_factor = 2*k_B*pixel_solid_angle_steradians/wavelength**2 #SI units
-    jy = 1.e-26 #Definition of Jy in SI units
-    scale_factor = scale_factor/jy #Scale factor to go from K to jy/pixel
+    make_positive_freq_subcube_from_multifreq_fitsfile(input_fitsfile='eor_standard.fits', output_fitsfile= 'eor_standard_subcube.fits', start_channel=start_channel, num_channels=num_channels, cellsize_arcmin=pixel_spacing_arcmin)
 
-    #Create fg, eor, and fg+eor images in units of Jy/pixel
-    scale_image('fg_image_1.17arcmin.fits', scale_factor, 'fg_image_jy_per_px.fits')
-    scale_image('eor_image_1.17arcmin.fits', scale_factor, 'eor_image_jy_per_px.fits')
-    add_images('fg_image_jy_per_px.fits', 'eor_image_jy_per_px.fits', 'fg_plus_eor_image_jy_per_px.fits')
 
-    #Create skymodels from these images
-    make_skymodel_from_fitsfile(fitsfile='fg_image_jy_per_px.fits', skymodel='fg_image_jy_per_px.osm')
-    make_skymodel_from_fitsfile(fitsfile='eor_image_jy_per_px.fits', skymodel='eor_image_jy_per_px.osm')
-    make_skymodel_from_fitsfile(fitsfile='fg_plus_eor_image_jy_per_px.fits', skymodel='fg_plus_eor_image_jy_per_px.osm')
+    os.system('mkdir -p skymodels_mf') 
+
+    for channel in range(num_channels):
+
+        frequency = make_freq_slice_from_multifreq_fitsfile(fitsfile='GalFG_standard_subcube.fits', img_filename='fg_image_slice.fits', channel=channel, cellsize_arcmin=pixel_spacing_arcmin)
+        scale_factor = scale_factor_jy_per_pixel(pixel_spacing_arcmin, frequency)
+        scale_image('fg_image_slice.fits', scale_factor, 'fg_image_slice_jy_per_px.fits')
+        make_skymodel_from_fitsfile(fitsfile='fg_image_slice_jy_per_px.fits', skymodel='skymodels_mf/fg_image_jy_per_px_%s_Hz.osm'%str(frequency))
+
+        frequency = make_freq_slice_from_multifreq_fitsfile(fitsfile='eor_standard_subcube.fits', img_filename='eor_image_slice.fits', channel=channel, cellsize_arcmin=pixel_spacing_arcmin)
+        scale_factor = scale_factor_jy_per_pixel(pixel_spacing_arcmin, frequency)
+        scale_image('eor_image_slice.fits', scale_factor, 'eor_image_slice_jy_per_px.fits')
+        print frequency, str(frequency)
+        make_skymodel_from_fitsfile(fitsfile='eor_image_slice_jy_per_px.fits', skymodel='skymodels_mf/eor_image_jy_per_px_%s_Hz.osm'%str(frequency))
+
+        add_images('fg_image_slice_jy_per_px.fits', 'eor_image_slice_jy_per_px.fits', 'fg_plus_eor_image_slice_jy_per_px.fits')
+        make_skymodel_from_fitsfile(fitsfile='fg_plus_eor_image_slice_jy_per_px.fits', skymodel='skymodels_mf/fg_plus_eor_image_jy_per_px_%s_Hz.osm'%str(frequency))
+
+
