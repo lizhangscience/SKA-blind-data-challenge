@@ -64,7 +64,7 @@ The EoR and FG OSKAR skymodel files in the directory skymodels_mf are created by
   2. Image files + PSF files
   3. Beam model file
   4. Telescope configuration directory
-  5. Documentationfile: Documentation.pdf
+  5. Documentation file: Documentation.pdf
 
 # Truth values
 
