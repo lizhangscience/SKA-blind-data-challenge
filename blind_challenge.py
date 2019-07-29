@@ -1,4 +1,4 @@
-from definitions_mf_mt import *
+from definitions import *
 from pyrap.tables import table
 import os
 import time
